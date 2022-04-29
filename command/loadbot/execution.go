@@ -36,6 +36,9 @@ const (
 	deploy   Mode = "deploy"
 	erc20    Mode = "erc20"
 	erc721   Mode = "erc721"
+	c_chain  Mode = "c_chain"
+	p_chain  Mode = "p_chain"
+	x_chain  Mode = "x_chain"
 )
 
 type Account struct {
