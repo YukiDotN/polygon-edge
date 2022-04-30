@@ -26,6 +26,24 @@ func (dg *DeployGenerator) GetExampleTransaction() (*types.Transaction, error) {
 	}, dg.params.SenderKey)
 }
 
+func NewCChainGenerator(params *GeneratorParams) (*DeployGenerator, error) {
+	deployGenerator := &DeployGenerator{}
+
+	deployGenerator.BaseGenerator = BaseGenerator{
+		failedTxns: make([]*FailedTxnInfo, 0),
+		params:     params,
+		signer:     crypto.NewEIP155Signer(params.ChainID),
+	}
+
+	buf, err := hex.DecodeString(params.ContractArtifact.Bytecode)
+	if err != nil {
+		return nil, fmt.Errorf("unable to decode bytecode, %w", err)
+	}
+
+	deployGenerator.contractBytecode = buf
+
+	return deployGenerator, nil
+}
 func NewDeployGenerator(params *GeneratorParams) (*DeployGenerator, error) {
 	deployGenerator := &DeployGenerator{}
 

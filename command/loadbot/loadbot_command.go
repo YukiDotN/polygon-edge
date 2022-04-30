@@ -15,7 +15,7 @@ func GetCommand() *cobra.Command {
 		PreRunE: runPreRun,
 		Run:     runCommand,
 	}
-
+	// TODO: Migrate to avalanche
 	helper.RegisterGRPCAddressFlag(loadbotCmd)
 	helper.RegisterJSONRPCFlag(loadbotCmd)
 
@@ -32,11 +32,11 @@ func setFlags(cmd *cobra.Command) {
 		100,
 		"number of transactions to send per second.",
 	)
-
+	// default to 43112 (avax local testnet)
 	cmd.Flags().Uint64Var(
 		&params.chainID,
 		chainIDFlag,
-		100,
+		43112,
 		"the network chain ID.",
 	)
 
@@ -51,7 +51,7 @@ func setFlags(cmd *cobra.Command) {
 		&params.modeRaw,
 		modeFlag,
 		string(transfer),
-		"the mode of operation [transfer, deploy, erc20, erc721].",
+		"the mode of operation [transfer, deploy, erc20, erc721, c_chain, x_chain].",
 	)
 
 	cmd.Flags().StringVar(

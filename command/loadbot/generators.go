@@ -14,7 +14,10 @@ import (
 )
 
 func createJSONRPCClient(endpoint string, maxConns int) (*jsonrpc.Client, error) {
-	client, err := jsonrpc.NewClient(endpoint)
+	client, err := jsonrpc.NewClient(endpoint, jsonrpc.WithHeaders(map[string]string{
+		// "content-type": "application/json",
+	}))
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new JSON RPC client: %w", err)
 	}
@@ -33,6 +36,7 @@ func createGRPCClient(endpoint string) (txpoolOp.TxnPoolOperatorClient, error) {
 	return txpoolOp.NewTxnPoolOperatorClient(conn), nil
 }
 
+// NOTE extractSenderAccount and get privkey from env prefix with `LOADBOT_`
 func extractSenderAccount(address types.Address) (*Account, error) {
 	sender := &Account{
 		Address:    address,

@@ -173,6 +173,7 @@ func (p *loadbotParams) initTxnValue() error {
 func (p *loadbotParams) initContract() error {
 	var readErr error
 
+	//NOTE here use the default contract bytecode.
 	p.contractArtifact = &generator.ContractArtifact{
 		Bytecode: generator.DefaultContractBytecode,
 	}

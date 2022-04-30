@@ -16,7 +16,9 @@ import (
 func getInitialSenderNonce(client *jsonrpc.Client, address types.Address) (uint64, error) {
 	nonce, err := client.Eth().GetNonce(web3.Address(address), web3.Latest)
 	if err != nil {
+		// panic("")
 		return 0, fmt.Errorf("failed to query initial sender nonce: %w", err)
+
 	}
 
 	return nonce, nil

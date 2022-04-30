@@ -11,7 +11,7 @@ import (
 )
 
 const DefaultGRPCPort int = 9632
-const DefaultJSONRPCPort int = 8545
+const DefaultJSONRPCPort int = 9650
 
 // Config is used to parametrize the minimal client
 type Config struct {

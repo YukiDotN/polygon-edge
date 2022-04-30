@@ -35,7 +35,7 @@ const (
 	transfer Mode = "transfer"
 	deploy   Mode = "deploy"
 	erc20    Mode = "erc20"
-	erc721   Mode = "erc721"
+	erc721   Mode = "erc72`1"
 	c_chain  Mode = "c_chain"
 	p_chain  Mode = "p_chain"
 	x_chain  Mode = "x_chain"
@@ -151,10 +151,12 @@ func (l *Loadbot) initContractMetricsIfNeeded() {
 	}
 }
 
+// Check if the contract mode on and turn up metric.
 func (l *Loadbot) needsContractMetrics() bool {
 	return l.cfg.GeneratorMode == deploy ||
 		l.cfg.GeneratorMode == erc20 ||
-		l.cfg.GeneratorMode == erc721
+		l.cfg.GeneratorMode == erc721 ||
+		l.cfg.GeneratorMode == c_chain
 }
 
 func (l *Loadbot) GetMetrics() *Metrics {
@@ -165,12 +167,16 @@ func (l *Loadbot) GetGenerator() generator.TransactionGenerator {
 	return l.generator
 }
 
+// INITIAL POINT
+
 func (l *Loadbot) Run() error {
+	// NOTE Parse sender address here
 	sender, err := extractSenderAccount(l.cfg.Sender)
 	if err != nil {
 		return fmt.Errorf("failed to extract sender account: %w", err)
 	}
 
+	// TODO replace with avalanche config
 	jsonClient, err := createJSONRPCClient(l.cfg.JSONRPC, l.cfg.MaxConns)
 	if err != nil {
 		return fmt.Errorf("an error has occurred while creating JSON-RPC client: %w", err)
@@ -189,7 +195,8 @@ func (l *Loadbot) Run() error {
 	if err != nil {
 		return fmt.Errorf("unable to get initial sender nonce: %w", err)
 	}
-
+	fmt.Println("NONCE")
+	// request gas price
 	gasPrice := l.cfg.GasPrice
 	if gasPrice == nil {
 		// No gas price specified, query the network for an estimation
@@ -229,6 +236,12 @@ func (l *Loadbot) Run() error {
 		tokenTxnGenerator, genErr = generator.NewERC20Generator(generatorParams)
 	case erc721:
 		tokenTxnGenerator, genErr = generator.NewERC721Generator(generatorParams)
+
+	// AVAX C-Chain Implementation
+	case c_chain:
+		txnGenerator, genErr = generator.NewCChainGenerator(generatorParams)
+	case x_chain:
+		fmt.Println("Not Implement Yet")
 	}
 
 	if genErr != nil {
@@ -236,12 +249,14 @@ func (l *Loadbot) Run() error {
 	}
 
 	switch l.cfg.GeneratorMode {
+	// TOKEN MODE
 	case erc20, erc721:
 		l.generator = tokenTxnGenerator
+	// C-CHAIN
 	default:
 		l.generator = txnGenerator
 	}
-
+	// Gas setup
 	if err := l.updateGasEstimate(jsonClient); err != nil {
 		return fmt.Errorf("could not update gas estimate, %w", err)
 	}
@@ -259,6 +274,7 @@ func (l *Loadbot) Run() error {
 
 	startTime := time.Now()
 
+	// TOKEN MODE ONLY
 	if l.isTokenTransferMode() {
 		if err := l.deployContract(grpcClient, jsonClient, receiptTimeout); err != nil {
 			return fmt.Errorf("unable to deploy smart contract, %w", err)
@@ -278,6 +294,7 @@ func (l *Loadbot) Run() error {
 		seenBlockNums[blockNum] = struct{}{}
 	}
 
+	// HEY! START EXECUTION
 	for i := uint64(0); i < l.cfg.Count; i++ {
 		<-ticker.C
 
@@ -359,6 +376,7 @@ func (l *Loadbot) Run() error {
 	return nil
 }
 
+// NOTE Here execute tx
 func (l *Loadbot) executeTxn(
 	client txpoolOp.TxnPoolOperatorClient,
 ) (web3.Hash, error) {
